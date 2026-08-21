@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>경찰 RP 공표 도구</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+  /* 다크 우선 — 인게임 오버레이 환경 기준 */
+  :root{
+    --bg:#0E141C;
+    --surface:#151D28;
+    --raised:#1B2533;
+    --line:#27313F;
+    --ink:#E7EDF5;
+    --muted:#8D9BAD;
+    --accent:#E0A340;
+    --accent-ink:#1A1206;
+    --accent-soft:#2A2113;
+    --danger:#E0645C;
+    --danger-soft:#2C1917;
+    --ok:#46B07C;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 16px 40px rgba(0,0,0,.45);
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#EBEFF4;
+      --surface:#FFFFFF;
+      --raised:#F4F7FA;
+      --line:#D8E0E9;
+      --ink:#0F1821;
+      --muted:#5A6675;
+      --accent:#9A6413;
+      --accent-ink:#FFFFFF;
+      --accent-soft:#FBF1DF;
+      --danger:#B0342E;
+      --danger-soft:#FBEAE8;
+      --ok:#1B7A4C;
+      --shadow:0 1px 2px rgba(15,24,33,.05), 0 14px 36px rgba(15,24,33,.10);
+    }
+  }
+  :root[data-theme="light"]{
+    --bg:#EBEFF4;
+    --surface:#FFFFFF;
+    --raised:#F4F7FA;
+    --line:#D8E0E9;
+    --ink:#0F1821;
+    --muted:#5A6675;
+    --accent:#9A6413;
+    --accent-ink:#FFFFFF;
+    --accent-soft:#FBF1DF;
+    --danger:#B0342E;
+    --danger-soft:#FBEAE8;
+    --ok:#1B7A4C;
+    --shadow:0 1px 2px rgba(15,24,33,.05), 0 14px 36px rgba(15,24,33,.10);
+  }
+
+  *{box-sizing:border-box}
+
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    -webkit-font-smoothing:antialiased;
+    font-size:15px;
+    line-height:1.5;
+  }
+  .mono{ font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace; font-variant-numeric:tabular-nums }
+
+  /* ── 상단 시계 바 ───────────────────────────── */
+  .topbar{
+    position:sticky; top:0; z-index:20;
+    background:var(--surface);
+    border-bottom:1px solid var(--line);
+    padding:12px 20px;
+  }
+  .topwrap{
+    max-width:1180px; margin:0 auto;
+    display:flex; align-items:center; gap:16px; flex-wrap:wrap;
+  }
+  .clock{ display:flex; align-items:baseline; gap:9px }
+  .clock .lbl{ font-size:12px; color:var(--muted); letter-spacing:.06em }
+  .clock .val{ font-size:27px; font-weight:600; letter-spacing:-.01em }
+
+  .quick{ display:flex; gap:7px }
+  .deadlines{ display:flex; gap:7px; flex-wrap:wrap; margin-left:auto }
+  .dl{
+    display:none; align-items:center; gap:7px;
+    padding:5px 11px; border-radius:999px;
+    border:1px solid var(--line); background:var(--raised);
+    font-size:12.5px; white-space:nowrap;
+  }
+  .dl.on{ display:inline-flex }
+  .dl .nm{ color:var(--muted) }
+  .dl .tm{ font-weight:600 }
+  .dl .rm{ color:var(--accent) }
+  .dl.over{ border-color:var(--danger); background:var(--danger-soft) }
+  .dl.over .rm{ color:var(--danger) }
+
+  /* ── 레이아웃 ──────────────────────────────── */
+  .page{
+    max-width:1180px; margin:0 auto;
+    padding:20px 20px 60px;
+    display:grid; grid-template-columns:330px 1fr; gap:20px; align-items:start;
+  }
+  @media (max-width: 900px){ .page{ grid-template-columns:1fr } }
+
+  .side{ position:sticky; top:76px; display:flex; flex-direction:column; gap:14px }
+  @media (max-width: 900px){ .side{ position:static } }
+
+  .panel{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:13px; padding:16px; box-shadow:var(--shadow);
+  }
+  .panel h2{
+    margin:0 0 12px; font-size:12px; font-weight:600;
+    letter-spacing:.09em; text-transform:uppercase; color:var(--muted);
+  }
+  .field{ display:flex; flex-direction:column; gap:5px; margin-bottom:11px }
+  .field:last-child{ margin-bottom:0 }
+  .field label{ font-size:12.5px; color:var(--muted) }
+  input[type="text"], input[type="number"]{
+    width:100%; padding:9px 11px;
+    background:var(--raised); color:var(--ink);
+    border:1px solid var(--line); border-radius:9px;
+    font-family:inherit; font-size:14.5px;
+  }
+  input::placeholder{ color:var(--muted); opacity:.7 }
+  input:focus-visible{ outline:2px solid var(--accent); outline-offset:1px }
+
+  .grouplbl{
+    font-size:11px; letter-spacing:.09em; color:var(--muted);
+    margin:12px 0 7px; text-transform:uppercase;
+  }
+  .grouplbl:first-of-type{ margin-top:0 }
+  .chips{ display:flex; flex-wrap:wrap; gap:6px }
+
+  button{
+    font-family:inherit; cursor:pointer;
+    border-radius:8px; border:1px solid var(--line);
+    background:var(--raised); color:var(--ink);
+    transition:background .13s, border-color .13s, color .13s;
+  }
+  button:focus-visible{ outline:2px solid var(--accent); outline-offset:2px }
+  .chip{ padding:7px 11px; font-size:13.5px; color:var(--muted) }
+  .chip:hover{ color:var(--ink); border-color:var(--accent) }
+  .chip[aria-pressed="true"]{
+    background:var(--accent); border-color:var(--accent);
+    color:var(--accent-ink); font-weight:600;
+  }
+  .mini{ padding:6px 10px; font-size:12.5px; color:var(--muted) }
+  .mini:hover{ color:var(--ink); border-color:var(--accent) }
+
+  /* ── 단계 카드 ─────────────────────────────── */
+  .stages{ display:flex; flex-direction:column; gap:14px }
+  .stage{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:13px; box-shadow:var(--shadow); overflow:hidden;
+  }
+  .stage.hide{ display:none }
+  .shead{
+    display:flex; align-items:center; gap:11px; flex-wrap:wrap;
+    padding:13px 16px; border-bottom:1px solid var(--line);
+    background:var(--raised);
+  }
+  .num{
+    flex:none; width:23px; height:23px; border-radius:6px;
+    display:grid; place-items:center;
+    background:var(--accent); color:var(--accent-ink);
+    font-size:12.5px; font-weight:600;
+  }
+  .stage.warn .num{ background:var(--danger); color:#fff }
+  .shead h3{ margin:0; font-size:15px; font-weight:600 }
+  .tag{
+    padding:3px 8px; border-radius:999px; font-size:11.5px;
+    border:1px solid var(--line); color:var(--muted); background:var(--surface);
+  }
+  .tag.twice{ border-color:var(--accent); color:var(--accent) }
+  .timer{ margin-left:auto; display:flex; align-items:center; gap:8px; font-size:12.5px }
+  .timer .state{ color:var(--muted) }
+  .timer .state b{ color:var(--ink); font-weight:600 }
+
+  .lines{ display:flex; flex-direction:column }
+  .line{
+    display:flex; align-items:center; gap:12px;
+    padding:11px 16px; border-top:1px solid var(--line);
+  }
+  .line:first-child{ border-top:0 }
+  .line .txt{
+    flex:1; min-width:0;
+    font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:13.5px; line-height:1.6; word-break:break-word;
+  }
+  .line .txt em{ font-style:normal; color:var(--accent); font-weight:600 }
+  .copy{
+    flex:none; padding:8px 14px; font-size:13px; font-weight:600;
+    background:var(--accent); border-color:var(--accent); color:var(--accent-ink);
+  }
+  .copy:hover{ filter:brightness(1.08) }
+  .copy.done{ background:var(--ok); border-color:var(--ok); color:#fff }
+  .copy.fail{ background:transparent; border-color:var(--danger); color:var(--danger) }
+
+  .note{
+    padding:11px 16px; border-top:1px solid var(--line);
+    font-size:12.5px; color:var(--muted); background:var(--raised);
+  }
+  .note.hide{ display:none }
+
+  .foot{
+    max-width:1180px; margin:0 auto; padding:0 20px 40px;
+    font-size:12px; color:var(--muted); text-align:center;
+  }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important } }
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topwrap">
+    <div class="clock">
+      <span class="lbl">현재</span>
+      <span class="val mono" id="clock">--:--:--</span>
+    </div>
+    <div class="quick">
+      <button class="mini" id="q5">+5분 <span class="mono" id="q5v">--:--</span></button>
+      <button class="mini" id="q40">+40분 <span class="mono" id="q40v">--:--</span></button>
+    </div>
+    <div class="deadlines" id="deadlines"></div>
+  </div>
+</header>
+
+<div class="page">
+  <aside class="side">
+    <section class="panel">
+      <h2>대상자</h2>
+      <div class="field">
+        <label for="sid">고유번호</label>
+        <input type="text" id="sid" placeholder="예: 1234" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="snick">닉네임</label>
+        <input type="text" id="snick" placeholder="예: 홍길동" autocomplete="off">
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>영장 대상</h2>
+      <div class="grouplbl">조직</div>
+      <div class="chips" id="orgChips"></div>
+      <div class="grouplbl">기업</div>
+      <div class="chips" id="corpChips"></div>
+      <div class="grouplbl">장소</div>
+      <div class="chips" id="siteChips"></div>
+    </section>
+
+    <section class="panel">
+      <h2>진행 상태</h2>
+      <div class="chips">
+        <button class="mini" id="resetAll">전체 시간 초기화</button>
+      </div>
+    </section>
+  </aside>
+
+  <main class="stages" id="stages"></main>
+</div>
+
+<p class="foot">시간은 보는 사람의 기기 시각 기준입니다 · 공표 시각은 [시작]을 누르거나 첫 복사 시점에 고정됩니다</p>
+
+<script>
+/* ══ 팩션 · 장소 양식 데이터 ══ */
+var FACTIONS = [
+  { key:'chilseong', name:'칠성', group:'조직', sites:[
+    { key:'mansion', label:'칠성 저택', type:'private', target:'칠성 저택', control:'칠성파 저택', member:'조직원' },
+    { key:'airport', label:'남부공항 (차전)', type:'airport', target:'남부공항 칠성 조직', member:'조직원' }
+  ]},
+  { key:'mumyeong', name:'무명', group:'조직', sites:[
+    { key:'mansion', label:'무명 저택', type:'private', target:'무명 저택', control:'무명 저택', member:'조직원' },
+    { key:'airport', label:'남부공항 (차전)', type:'airport', target:'남부공항 무명 조직', member:'조직원' }
+  ]},
+  { key:'jakdu', name:'작두', group:'조직', sites:[
+    { key:'mansion', label:'작두 저택', type:'private', target:'작두 저택', control:'작두 저택', member:'조직원' },
+    { key:'airport', label:'남부공항 (차전)', type:'airport', target:'남부공항 작두 조직', member:'조직원' }
+  ]},
+  { key:'cheongwol', name:'청월', group:'조직', sites:[
+    { key:'mansion', label:'청월 저택', type:'private', target:'청월 저택', control:'청월 저택', member:'조직원' },
+    { key:'airport', label:'남부공항 (차전)', type:'airport', target:'남부공항 청월 조직', member:'조직원' }
+  ]},
+  { key:'oily', name:'오일리', group:'기업', sites:[
+    { key:'main', label:'오일리 본점', type:'private', target:'오일리 본점', control:'오일리 본점', member:'직원' },
+    { key:'airport', label:'남부공항 (차전)', type:'airport', target:'남부공항 오일리', member:'조직원' }
+  ]},
+  { key:'baekho', name:'백호그룹', group:'기업', sites:[
+    { key:'gym', label:'백호 체육관', type:'private', target:'백호 체육관', control:'백호 체육관', member:'직원' },
+    { key:'motors', label:'백호 자동차', type:'private', target:'백호 자동차', control:'백호 자동차', member:'직원' },
+    { key:'airport', label:'남부공항 (차전)', type:'airport', target:'남부공항 백호그룹', member:'직원' }
+  ]},
+  { key:'eco', name:'에코하우스', group:'기업', sites:[
+    { key:'main', label:'에코하우스', type:'private', target:'에코하우스', control:'에코하우스', member:'직원' },
+    { key:'airport', label:'남부공항 (차전)', type:'airport', target:'남부공항 에코하우스', member:'직원' }
+  ]},
+  { key:'ppoi', name:'뽀이칼텍스', group:'기업', sites:[
+    { key:'main', label:'뽀이칼텍스', type:'private', target:'뽀이칼텍스', control:'뽀이칼텍스', member:'직원' },
+    { key:'airport', label:'남부공항 (차전)', type:'airport', target:'남부공항 뽀이칼텍스', member:'직원' }
+  ]},
+  { key:'custom', name:'더 커스텀 정비소', group:'기업', sites:[
+    { key:'main', label:'더 커스텀 정비소', type:'private', target:'더 커스텀 정비소', control:'더 커스텀 정비소', member:'직원' },
+    { key:'airport', label:'남부공항 (차전)', type:'airport', target:'남부공항 더 커스텀 정비소', member:'직원' }
+  ]},
+  { key:'ember', name:'엠버', group:'기업', sites:[
+    { key:'main', label:'엠버 레스토랑', type:'private', target:'엠버 레스토랑', control:'엠버 레스토랑', member:'직원' },
+    { key:'airport', label:'남부공항 (차전)', type:'airport', target:'남부공항 엠버 레스토랑', member:'직원' }
+  ]},
+  { key:'twoshot', name:'투샷', group:'기업', sites:[
+    { key:'main', label:'투샷 카페', type:'private', target:'투샷', control:'투샷 카페', member:'직원' },
+    { key:'airport', label:'남부공항 (차전)', type:'airport', target:'남부공항 투샷', member:'직원' }
+  ]}
+];
+
+/* ══ 상태 ══ */
+var state = {
+  faction: FACTIONS[0],
+  site: FACTIONS[0].sites[0],
+  stamps: { attend:null, wanted:null, prep:null, raid:null }
+};
+
+function pad(n){ return n < 10 ? '0' + n : '' + n; }
+function hhmm(d){ return pad(d.getHours()) + ':' + pad(d.getMinutes()); }
+function korTime(d){ return pad(d.getHours()) + '시 ' + pad(d.getMinutes()) + '분'; }
+function plus(mins){ return new Date(Date.now() + mins * 60000); }
+function sid(){ var v = document.getElementById('sid').value.trim(); return v || '고유번호'; }
+function snick(){ var v = document.getElementById('snick').value.trim(); return v || '닉네임'; }
+
+/* 스탬프가 있으면 고정 시각, 없으면 현재 기준 미리보기 */
+function deadline(key, mins){
+  return state.stamps[key] ? new Date(state.stamps[key]) : plus(mins);
+}
+
+/* ══ 단계 정의 ══ */
+var STAGES = [
+  {
+    id:'attend', no:1, title:'출석 RP', tags:['5분 내 3회 공지'],
+    timer:{ key:'attend', mins:5, label:'출석 마감' },
+    count:3,
+    line:function(i){
+      var t = korTime(deadline('attend', 5));
+      return '[' + sid() + '][' + snick() + ']님은 ' + t + '까지 경찰청으로 출석해주시기 바랍니다. [' + (i+1) + '/3]';
+    },
+    note:'증거 필수 · 공소시효 24시간 이내 · 5분이 지나도 응답이 없으면 불응으로 봅니다.'
+  },
+  {
+    id:'toWanted', no:2, title:'수배 전환 공표', tags:['1회 입력'], count:1,
+    line:function(){
+      return '[' + sid() + '][' + snick() + ']님 출석거부로 확인 되어 수배 RP로 전환됩니다.';
+    },
+    note:'무전으로 경찰청에 출근인원 집결 요청 후, 집결이 끝나면 입력합니다.'
+  },
+  {
+    id:'wanted', no:3, title:'수배 RP', tags:['40분 진행','2회 입력'],
+    timer:{ key:'wanted', mins:40, label:'수배 종료' },
+    count:1,
+    line:function(){
+      var t = korTime(deadline('wanted', 40));
+      return '[' + snick() + '][' + sid() + '] 현시간부로 ' + t + '까지 공개수배가 진행됨을 알려드립니다. 시민분들의 협조 부탁드리겠습니다.';
+    },
+    note:'공표 후 수배목록에 등록하고 위치를 확인합니다. 사유지에 있으면 영장 RP로 전환합니다.'
+  },
+  {
+    id:'toRaid', no:4, title:'영장 RP 전환 공표', tags:['1회 입력'], count:1,
+    line:function(){
+      return state.site.type === 'airport'
+        ? '수배자 위치가 남부공항으로 확인되어 영장RP로 전환됩니다.'
+        : '수배자 위치가 사유지로 확인되어 영장RP로 전환됩니다.';
+    }
+  },
+  {
+    id:'warrant', no:5, title:'영장 코멘트 1 · 2 · 3차', tags:['각 1회 입력'], count:3,
+    line:function(i){
+      var s = state.site;
+      if (i === 0) return '1차 현시간부로 ' + s.target + '에 대한 영장이 발부되었습니다.';
+      if (i === 1) return '2차 현시간부로 ' + s.target + '에 대한 영장발부가 확정됨을 알려드립니다.';
+      return s.type === 'airport'
+        ? '3차 ' + s.member + ' 한분은 영장을 받아주시기 바랍니다.'
+        : '3차 ' + s.member + ' 한분은 입구로 나와서 영장을 받아주시기 바랍니다.';
+    },
+    note:'1·2차 입력 후 경찰 메인홀 NPC에게 영장을 발급받고, 현장으로 이동해 3차를 입력합니다.'
+  },
+  {
+    id:'prep', no:6, title:'영장 준비시간 (불응 시)', tags:['1회 입력'],
+    timer:{ key:'prep', mins:5, label:'준비 마감', adjustable:true },
+    count:1,
+    line:function(){
+      var t = korTime(deadline('prep', prepMins()));
+      return state.faction.name + ' 영장 준비시간 (' + t + ') 까지입니다.';
+    },
+    note:'순응하면 체포 후 법규대로 진행합니다. 불응하면 준비시간을 주고 경찰청으로 복귀합니다.'
+  },
+  {
+    id:'raid', no:7, title:'전력진압 공표', tags:['40분 진행','2회 입력'],
+    timer:{ key:'raid', mins:40, label:'진압 종료' },
+    privateOnly:true,
+    count:1,
+    line:function(){
+      var s = state.site;
+      var t = korTime(deadline('raid', 40));
+      return '현시간부로 ' + s.target + '에 대한 전력진압 (' + t + ')까지 실시하겠습니다. '
+           + s.control + ' 주변 반경 1km 내 접근을 통제하며, 접근 시 공범으로 간주하여 발포합니다.';
+    },
+    note:'준비시간 경과 후 사유지 진입경로를 파악하고 두 번 입력한 뒤 전멸전을 시작합니다.'
+  }
+];
+
+function prepMins(){
+  var el = document.getElementById('prepMins');
+  var v = el ? parseInt(el.value, 10) : 5;
+  if (isNaN(v) || v < 1) v = 1;
+  if (v > 120) v = 120;
+  return v;
+}
+
+/* ══ 복사 ══ */
+function legacyCopy(text){
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.setAttribute('readonly','');
+  ta.style.position = 'fixed'; ta.style.top = '-1000px';
+  document.body.appendChild(ta);
+  ta.select(); ta.setSelectionRange(0, text.length);
+  var ok = false;
+  try { ok = document.execCommand('copy'); } catch(e){ ok = false; }
+  document.body.removeChild(ta);
+  return ok;
+}
+function flash(btn, cls, label){
+  btn.classList.remove('done','fail');
+  if (cls) btn.classList.add(cls);
+  btn.textContent = label;
+  clearTimeout(btn._t);
+  btn._t = setTimeout(function(){
+    btn.classList.remove('done','fail');
+    if (btn._baseHtml) btn.innerHTML = btn._baseHtml;
+    else btn.textContent = btn._base || '복사';
+  }, 1500);
+}
+/* 클립보드가 막힌 환경(노션 등 샌드박스 iframe)에서는 문구를 선택해 준다 */
+function selectNode(node){
+  if (!node) return;
+  try {
+    var r = document.createRange();
+    r.selectNodeContents(node);
+    var s = window.getSelection();
+    s.removeAllRanges();
+    s.addRange(r);
+  } catch(e){}
+}
+function copyText(text, btn, node){
+  function ok(){ flash(btn, 'done', '복사됨'); }
+  function no(){ selectNode(node); flash(btn, 'fail', 'Ctrl+C'); }
+  if (navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(ok, function(){ legacyCopy(text) ? ok() : no(); });
+  } else {
+    legacyCopy(text) ? ok() : no();
+  }
+}
+
+/* ══ 렌더 ══ */
+function el(tag, cls, text){
+  var n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;
+  return n;
+}
+
+function buildChips(){
+  var org = document.getElementById('orgChips');
+  var corp = document.getElementById('corpChips');
+  FACTIONS.forEach(function(f){
+    var b = el('button', 'chip', f.name);
+    b.dataset.faction = f.key;
+    b.setAttribute('aria-pressed','false');
+    b.addEventListener('click', function(){
+      state.faction = f;
+      state.site = f.sites[0];
+      buildSiteChips();
+      syncChips();
+      tick();
+    });
+    (f.group === '조직' ? org : corp).appendChild(b);
+  });
+  buildSiteChips();
+}
+
+function buildSiteChips(){
+  var box = document.getElementById('siteChips');
+  box.innerHTML = '';
+  state.faction.sites.forEach(function(s){
+    var b = el('button', 'chip', s.label);
+    b.dataset.site = s.key;
+    b.setAttribute('aria-pressed','false');
+    b.addEventListener('click', function(){
+      state.site = s;
+      syncChips();
+      tick();
+    });
+    box.appendChild(b);
+  });
+}
+
+function syncChips(){
+  document.querySelectorAll('[data-faction]').forEach(function(b){
+    b.setAttribute('aria-pressed', b.dataset.faction === state.faction.key ? 'true' : 'false');
+  });
+  document.querySelectorAll('[data-site]').forEach(function(b){
+    b.setAttribute('aria-pressed', b.dataset.site === state.site.key ? 'true' : 'false');
+  });
+}
+
+function buildStages(){
+  var root = document.getElementById('stages');
+  STAGES.forEach(function(st){
+    var card = el('section', 'stage' + (st.warn ? ' warn' : ''));
+    card.dataset.id = st.id;
+
+    var head = el('div', 'shead');
+    head.appendChild(el('span', 'num', String(st.no)));
+    head.appendChild(el('h3', null, st.title));
+    (st.tags || []).forEach(function(t){
+      head.appendChild(el('span', 'tag' + (t.indexOf('2회') === 0 ? ' twice' : ''), t));
+    });
+
+    if (st.timer){
+      var tm = el('div', 'timer');
+      if (st.timer.adjustable){
+        var inp = document.createElement('input');
+        inp.type = 'number'; inp.id = 'prepMins'; inp.value = '5';
+        inp.min = '1'; inp.max = '120';
+        inp.style.width = '62px'; inp.style.padding = '5px 8px'; inp.style.fontSize = '13px';
+        inp.setAttribute('aria-label','준비시간(분)');
+        inp.addEventListener('input', tick);
+        tm.appendChild(inp);
+        tm.appendChild(el('span', 'state', '분'));
+      }
+      var stt = el('span', 'state');
+      stt.id = 'state-' + st.id;
+      tm.appendChild(stt);
+      var go = el('button', 'mini', '시작');
+      go.addEventListener('click', function(){
+        if (state.stamps[st.timer.key]){
+          state.stamps[st.timer.key] = null;
+        } else {
+          state.stamps[st.timer.key] = plus(st.timer.adjustable ? prepMins() : st.timer.mins).getTime();
+        }
+        tick();
+      });
+      go.id = 'go-' + st.id;
+      tm.appendChild(go);
+      head.appendChild(tm);
+    }
+    card.appendChild(head);
+
+    var lines = el('div', 'lines');
+    for (var i = 0; i < st.count; i++){
+      (function(idx){
+        var row = el('div', 'line');
+        var txt = el('div', 'txt mono');
+        txt.id = 'txt-' + st.id + '-' + idx;
+        var btn = el('button', 'copy', '복사');
+        btn._base = '복사';
+        btn.addEventListener('click', function(){
+          if (st.timer && !state.stamps[st.timer.key]){
+            state.stamps[st.timer.key] = plus(st.timer.adjustable ? prepMins() : st.timer.mins).getTime();
+            tick();
+          }
+          copyText(st.line(idx), btn, txt);
+        });
+        row.appendChild(txt);
+        row.appendChild(btn);
+        lines.appendChild(row);
+      })(i);
+    }
+    card.appendChild(lines);
+
+    if (st.note) card.appendChild(el('div', 'note', st.note));
+    root.appendChild(card);
+  });
+}
+
+function buildDeadlineChips(){
+  var box = document.getElementById('deadlines');
+  STAGES.filter(function(s){ return s.timer; }).forEach(function(s){
+    var d = el('span', 'dl');
+    d.id = 'dl-' + s.id;
+    d.appendChild(el('span', 'nm', s.timer.label));
+    d.appendChild(el('span', 'tm mono', '--:--'));
+    d.appendChild(el('span', 'rm mono', ''));
+    box.appendChild(d);
+  });
+}
+
+function remainText(ms){
+  if (ms <= 0) return '종료';
+  var s = Math.floor(ms / 1000);
+  return '-' + pad(Math.floor(s / 60)) + ':' + pad(s % 60);
+}
+
+function tick(){
+  var now = new Date();
+  document.getElementById('clock').textContent = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+  var q5v = document.getElementById('q5v'); if (q5v) q5v.textContent = hhmm(plus(5));
+  var q40v = document.getElementById('q40v'); if (q40v) q40v.textContent = hhmm(plus(40));
+
+  STAGES.forEach(function(st){
+    var card = document.querySelector('.stage[data-id="' + st.id + '"]');
+    if (st.privateOnly) card.classList.toggle('hide', state.site.type === 'airport');
+
+    for (var i = 0; i < st.count; i++){
+      var node = document.getElementById('txt-' + st.id + '-' + i);
+      var v = st.line(i);
+      if (node.textContent !== v) node.textContent = v;
+    }
+
+    if (st.timer){
+      var stamp = state.stamps[st.timer.key];
+      var stt = document.getElementById('state-' + st.id);
+      var go = document.getElementById('go-' + st.id);
+      var dl = document.getElementById('dl-' + st.id);
+      if (stamp){
+        var left = stamp - now.getTime();
+        stt.innerHTML = '';
+        stt.appendChild(document.createTextNode(st.timer.label + ' '));
+        var b = el('b', 'mono', korTime(new Date(stamp)));
+        stt.appendChild(b);
+        stt.appendChild(document.createTextNode(' · ' + remainText(left)));
+        go.textContent = '해제';
+        dl.classList.add('on');
+        dl.classList.toggle('over', left <= 0);
+        dl.querySelector('.tm').textContent = hhmm(new Date(stamp));
+        dl.querySelector('.rm').textContent = remainText(left);
+      } else {
+        var mins = st.timer.adjustable ? prepMins() : st.timer.mins;
+        stt.textContent = '미시작 · 지금 누르면 ' + korTime(plus(mins));
+        go.textContent = '시작';
+        dl.classList.remove('on','over');
+      }
+    }
+  });
+}
+
+/* ══ 초기화 ══ */
+buildChips();
+buildStages();
+buildDeadlineChips();
+syncChips();
+
+document.getElementById('sid').addEventListener('input', tick);
+document.getElementById('snick').addEventListener('input', tick);
+document.getElementById('resetAll').addEventListener('click', function(){
+  state.stamps = { attend:null, wanted:null, prep:null, raid:null };
+  tick();
+});
+[['q5', 5], ['q40', 40]].forEach(function(pair){
+  var b = document.getElementById(pair[0]);
+  b._baseHtml = b.innerHTML;
+  b.addEventListener('click', function(){
+    b._baseHtml = b._baseHtml || b.innerHTML;
+    copyText(hhmm(plus(pair[1])), b);
+  });
+});
+
+tick();
+setInterval(tick, 1000);
+</script>
+</body>
+</html>
