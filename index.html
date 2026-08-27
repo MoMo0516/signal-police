@@ -215,26 +215,149 @@
   }
   @media (prefers-reduced-motion: reduce){ *{ transition:none !important } }
 </style>
+<style>
+  /* ── 가독성 개선본 ─────────────────────────── */
+  :root,
+  :root[data-theme="light"]{
+    --bg:#F3F6FA;
+    --surface:#FFFFFF;
+    --raised:#F7F9FC;
+    --line:#DCE4EE;
+    --ink:#172033;
+    --muted:#5C6879;
+    --accent:#1D5FD1;
+    --accent-ink:#FFFFFF;
+    --accent-soft:#EAF1FF;
+    --danger:#C43D49;
+    --danger-soft:#FDEEEF;
+    --ok:#177A55;
+    --shadow:0 10px 28px rgba(22,52,95,.07);
+  }
+  :root[data-theme="dark"]{
+    --bg:#0E141C;--surface:#151D28;--raised:#1B2533;--line:#2B3645;
+    --ink:#E7EDF5;--muted:#98A6B8;--accent:#72A7FF;--accent-ink:#10203B;
+    --accent-soft:#182A46;--danger:#F07873;--danger-soft:#351D1D;--ok:#50BC86;
+    --shadow:0 12px 34px rgba(0,0,0,.28)
+  }
+
+  body{background:var(--bg);font-size:15.5px;line-height:1.65}
+  .topbar{padding:10px 20px;background:rgba(255,255,255,.96);box-shadow:0 1px 0 rgba(22,52,95,.04);backdrop-filter:blur(10px)}
+  :root[data-theme="dark"] .topbar{background:rgba(21,29,40,.96)}
+  .topwrap{gap:18px}
+  .brand{display:flex;flex-direction:column;min-width:168px;line-height:1.15}
+  .brand small{font-size:10.5px;font-weight:600;letter-spacing:.12em;color:var(--accent)}
+  .brand b{font-size:15px;color:var(--ink)}
+  .clock{padding-left:18px;border-left:1px solid var(--line)}
+  .clock .lbl{font-size:11px}.clock .val{font-size:23px}
+  .quick{gap:6px}
+  .quick .mini{background:var(--accent-soft);border-color:#C9D9F3;color:var(--accent);font-weight:600}
+
+  .page{grid-template-columns:340px minmax(0,1fr);gap:22px;padding-top:18px}
+  .side{top:70px;gap:12px}
+  .panel{padding:18px;border-radius:15px;box-shadow:var(--shadow)}
+  .panel h2{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:var(--ink);font-size:14px;letter-spacing:0;text-transform:none}
+  .step-badge{width:22px;height:22px;display:grid;place-items:center;border-radius:50%;background:var(--accent);color:#fff;font:700 11px/1 "IBM Plex Mono",monospace}
+  .helper{margin:0 0 14px;color:var(--muted);font-size:12.5px;line-height:1.55}
+  .field label{color:#455266;font-weight:600}
+  input[type="text"],input[type="number"]{padding:11px 12px;background:var(--surface);border-color:#C9D4E2}
+  input.missing{border-color:#E3A0A6;background:var(--danger-soft)}
+  .field-status{margin:2px 0 0;color:var(--muted);font-size:11.5px;line-height:1.5}
+  .field-status.ready{color:var(--ok)}
+  .field-status.warn{color:var(--danger)}
+  .grouplbl{margin-top:14px;color:#657286;font-weight:700}
+  .chip{padding:8px 12px;background:var(--surface)}
+  .chip[aria-pressed="true"]{box-shadow:0 3px 8px rgba(29,95,209,.18)}
+  .selection{
+    margin-top:14px;padding:11px 12px;border-radius:10px;background:var(--accent-soft);border:1px solid #C9D9F3;
+    color:var(--muted);font-size:12px
+  }
+  .selection b{display:block;margin-top:2px;color:var(--ink);font-size:14px}
+  .reset{width:100%;padding:9px 12px;color:var(--danger);background:var(--surface);border-color:#E8BEC2}
+
+  .workspace{min-width:0}
+  .workspace-head{
+    display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin:2px 2px 13px
+  }
+  .workspace-head .kicker{color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.11em}
+  .workspace-head h2{margin:3px 0 3px;font-size:24px;letter-spacing:-.02em}
+  .workspace-head p{margin:0;color:var(--muted);font-size:13px}
+  .target-summary{padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--muted);font-size:12px;text-align:right}
+  .target-summary b{display:block;color:var(--ink);font-size:13px}
+  .phase{margin:22px 2px 9px}
+  .phase:first-child{margin-top:0}
+  .phase h2{display:flex;align-items:center;gap:8px;margin:0 0 2px;font-size:16px;color:var(--ink)}
+  .phase h2::before{content:"";width:4px;height:18px;border-radius:4px;background:var(--accent)}
+  .phase p{margin:0;color:var(--muted);font-size:12.5px}
+
+  .stages{gap:12px}
+  .stage{border-radius:15px;box-shadow:var(--shadow);overflow:hidden}
+  .stage[data-id="attend"],.stage[data-id="toWanted"],.stage[data-id="wanted"]{border-left:4px solid #2B6ED8}
+  .stage[data-id="toRaid"],.stage[data-id="warrant"],.stage[data-id="prep"],.stage[data-id="raid"]{border-left:4px solid #8A5A16}
+  .shead{padding:15px 17px;background:var(--surface)}
+  .num{width:26px;height:26px;border-radius:50%}
+  .shead h3{font-size:16px}
+  .tag{background:var(--raised)}
+  .timer{padding-left:10px}
+  .timer .mini{font-weight:600;background:var(--accent-soft);border-color:#C9D9F3;color:var(--accent)}
+  .line{align-items:stretch;padding:0;border-top:1px solid var(--line);background:var(--raised)}
+  .line-index{display:flex;align-items:center;justify-content:center;width:54px;padding:12px 6px;border-right:1px solid var(--line);color:var(--muted);font-size:11px;font-weight:700}
+  .line .txt{display:flex;align-items:center;padding:14px 16px;background:var(--surface);font-size:13.5px;line-height:1.65}
+  .copy{align-self:center;margin:9px 11px 9px 0;min-width:70px}
+  .copy:disabled{cursor:not-allowed;opacity:.45;filter:none}
+  .note{padding:12px 17px;background:#F8FAFD;line-height:1.55}
+  :root[data-theme="dark"] .note{background:var(--raised)}
+  .note::before{content:"확인 · ";color:var(--accent);font-weight:700}
+  .foot{padding-top:2px;line-height:1.6}
+
+  .theme-switch{
+    display:flex;flex:none;gap:3px;margin-left:4px;padding:3px;border:1px solid var(--line);
+    border-radius:10px;background:var(--raised)
+  }
+  .theme-switch button{padding:6px 9px;border:0;background:transparent;color:var(--muted);font-size:11.5px}
+  .theme-switch button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:700;box-shadow:0 1px 5px rgba(22,52,95,.12)}
+
+  @media (max-width:900px){
+    .page{grid-template-columns:1fr}.side{position:static}
+    .workspace-head{align-items:flex-start}.target-summary{display:none}
+  }
+  @media (max-width:600px){
+    .topbar{padding:9px 12px}.brand{min-width:auto}.brand small{display:none}.brand b{font-size:13px}
+    .clock{padding-left:10px}.clock .val{font-size:19px}.quick{order:3;width:100%}.quick .mini{flex:1}
+    .page{padding:14px 12px 42px}.workspace-head h2{font-size:21px}
+    .shead{align-items:flex-start}.timer{width:100%;margin-left:37px;padding-left:0}
+    .line{flex-wrap:wrap}.line-index{width:45px}.line .txt{width:calc(100% - 45px);flex:none}.line.single .txt{width:100%}
+    .copy{width:calc(100% - 22px);margin:0 11px 11px}.deadlines{width:100%;margin-left:0}.theme-switch{margin-left:auto}
+  }
+</style>
 </head>
 <body>
 <header class="topbar">
   <div class="topwrap">
+    <div class="brand">
+      <small>SIGNAL POLICE</small>
+      <b>경찰 RP 공표 도구</b>
+    </div>
     <div class="clock">
-      <span class="lbl">현재</span>
+      <span class="lbl">현재 시각</span>
       <span class="val mono" id="clock">--:--:--</span>
     </div>
     <div class="quick">
-      <button class="mini" id="q5">+5분 <span class="mono" id="q5v">--:--</span></button>
-      <button class="mini" id="q40">+40분 <span class="mono" id="q40v">--:--</span></button>
+      <button type="button" class="mini" id="q5" title="5분 뒤 시각 복사">5분 뒤 <span class="mono" id="q5v">--:--</span></button>
+      <button type="button" class="mini" id="q40" title="40분 뒤 시각 복사">40분 뒤 <span class="mono" id="q40v">--:--</span></button>
     </div>
     <div class="deadlines" id="deadlines"></div>
+    <div class="theme-switch" role="group" aria-label="화면 모드">
+      <button type="button" id="themeLight" aria-pressed="true">라이트</button>
+      <button type="button" id="themeDark" aria-pressed="false">다크</button>
+    </div>
   </div>
 </header>
 
 <div class="page">
   <aside class="side">
     <section class="panel">
-      <h2>대상자</h2>
+      <h2><span class="step-badge">1</span>대상자 정보</h2>
+      <p class="helper">출석·수배 문구에 들어갈 정보를 입력하세요.</p>
       <div class="field">
         <label for="sid">고유번호</label>
         <input type="text" id="sid" placeholder="예: 1234" autocomplete="off">
@@ -243,32 +366,64 @@
         <label for="snick">닉네임</label>
         <input type="text" id="snick" placeholder="예: 홍길동" autocomplete="off">
       </div>
+      <p class="field-status" id="targetHint" aria-live="polite">출석·수배 문구를 복사하려면 두 항목을 모두 입력하세요.</p>
     </section>
 
     <section class="panel">
-      <h2>영장 대상</h2>
+      <h2><span class="step-badge">2</span>영장 대상 선택</h2>
+      <p class="helper">영장을 집행할 조직 또는 기업을 먼저 고른 뒤 장소를 선택하세요.</p>
       <div class="grouplbl">조직</div>
       <div class="chips" id="orgChips"></div>
       <div class="grouplbl">기업</div>
       <div class="chips" id="corpChips"></div>
       <div class="grouplbl">장소</div>
       <div class="chips" id="siteChips"></div>
+      <div class="selection">현재 선택<b id="selectionText">—</b></div>
     </section>
 
     <section class="panel">
-      <h2>진행 상태</h2>
+      <h2><span class="step-badge">3</span>시간 관리</h2>
+      <p class="helper">각 단계에서 고정한 마감 시각을 모두 해제합니다.</p>
       <div class="chips">
-        <button class="mini" id="resetAll">전체 시간 초기화</button>
+        <button type="button" class="mini reset" id="resetAll">고정한 시간 모두 초기화</button>
       </div>
     </section>
   </aside>
 
-  <main class="stages" id="stages"></main>
+  <main class="workspace">
+    <div class="workspace-head">
+      <div>
+        <div class="kicker">STEP BY STEP</div>
+        <h2>단계별 공표 문구</h2>
+        <p>현재 상황에 해당하는 단계부터 위에서 아래로 진행하세요.</p>
+      </div>
+      <div class="target-summary">현재 선택<b id="targetSummary">—</b></div>
+    </div>
+    <div class="stages" id="stages"></div>
+  </main>
 </div>
 
-<p class="foot">시간은 보는 사람의 기기 시각 기준입니다 · 공표 시각은 [시작]을 누르거나 첫 복사 시점에 고정됩니다</p>
+<p class="foot">표시되는 시간은 현재 기기의 시각을 기준으로 계산됩니다.<br>마감 시각은 [시작]을 누르거나 해당 단계의 문구를 처음 복사할 때 고정됩니다.</p>
 
 <script>
+/* ══ 화면 모드 ══ */
+function setTheme(theme, save){
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('themeLight').setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+  document.getElementById('themeDark').setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
+  if (save){
+    try { localStorage.setItem('signal-police-theme', theme); } catch(e){}
+  }
+}
+var savedTheme = null;
+try { savedTheme = localStorage.getItem('signal-police-theme'); } catch(e){}
+var initialTheme = savedTheme === 'dark' || savedTheme === 'light'
+  ? savedTheme
+  : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+setTheme(initialTheme, false);
+document.getElementById('themeLight').addEventListener('click', function(){ setTheme('light', true); });
+document.getElementById('themeDark').addEventListener('click', function(){ setTheme('dark', true); });
+
 /* ══ 팩션 · 장소 양식 데이터 ══ */
 var FACTIONS = [
   { key:'chilseong', name:'칠성', group:'조직', sites:[
@@ -348,30 +503,30 @@ function deadline(key, mins){
 var STAGES = [
   {
     id:'attend', no:1, title:'출석 RP', tags:['5분 내 3회 공지'],
-    timer:{ key:'attend', mins:5, label:'출석 마감' },
-    count:3,
+    timer:{ key:'attend', mins:5, label:'출석 마감', startLabel:'출석 시작' },
+    count:3, requiresTarget:true,
     line:function(i){
       var t = korTime(deadline('attend', 5));
       return '[' + sid() + '][' + snick() + ']님은 ' + t + '까지 경찰청으로 출석해주시기 바랍니다. [' + (i+1) + '/3]';
     },
-    note:'증거 필수 · 공소시효 24시간 이내 · 5분이 지나도 응답이 없으면 불응으로 봅니다.'
+    note:'증거가 반드시 있어야 하며, 공소시효인 24시간 이내에만 진행할 수 있습니다. 5분이 지나도 응답이 없으면 불응으로 판단합니다.'
   },
   {
-    id:'toWanted', no:2, title:'수배 전환 공표', tags:['1회 입력'], count:1,
+    id:'toWanted', no:2, title:'수배 전환 공표', tags:['1회 입력'], count:1, requiresTarget:true,
     line:function(){
       return '[' + sid() + '][' + snick() + ']님 출석거부로 확인 되어 수배 RP로 전환됩니다.';
     },
-    note:'무전으로 경찰청에 출근인원 집결 요청 후, 집결이 끝나면 입력합니다.'
+    note:'먼저 무전으로 경찰청 출근 인원의 집결을 요청합니다. 인원이 모두 모이면 이 문구를 입력합니다.'
   },
   {
     id:'wanted', no:3, title:'수배 RP', tags:['40분 진행','2회 입력'],
-    timer:{ key:'wanted', mins:40, label:'수배 종료' },
-    count:1,
+    timer:{ key:'wanted', mins:40, label:'수배 종료', startLabel:'수배 시작' },
+    count:1, requiresTarget:true,
     line:function(){
       var t = korTime(deadline('wanted', 40));
       return '[' + snick() + '][' + sid() + '] 현시간부로 ' + t + '까지 공개수배가 진행됨을 알려드립니다. 시민분들의 협조 부탁드리겠습니다.';
     },
-    note:'공표 후 수배목록에 등록하고 위치를 확인합니다. 사유지에 있으면 영장 RP로 전환합니다.'
+    note:'공표한 뒤 대상자를 수배 목록에 등록하고 위치를 확인합니다. 대상자가 사유지에 있으면 영장 RP로 전환합니다.'
   },
   {
     id:'toRaid', no:4, title:'영장 RP 전환 공표', tags:['1회 입력'], count:1,
@@ -391,21 +546,21 @@ var STAGES = [
         ? '3차 ' + s.member + ' 한분은 영장을 받아주시기 바랍니다.'
         : '3차 ' + s.member + ' 한분은 입구로 나와서 영장을 받아주시기 바랍니다.';
     },
-    note:'1·2차 입력 후 경찰 메인홀 NPC에게 영장을 발급받고, 현장으로 이동해 3차를 입력합니다.'
+    note:'1차와 2차 문구를 입력한 뒤 경찰 메인홀 NPC에게 영장을 발급받습니다. 이후 현장으로 이동해 3차 문구를 입력합니다.'
   },
   {
     id:'prep', no:6, title:'영장 준비시간 (불응 시)', tags:['1회 입력'],
-    timer:{ key:'prep', mins:5, label:'준비 마감', adjustable:true },
+    timer:{ key:'prep', mins:5, label:'준비 마감', startLabel:'준비시간 시작', adjustable:true },
     count:1,
     line:function(){
       var t = korTime(deadline('prep', prepMins()));
       return state.faction.name + ' 영장 준비시간 (' + t + ') 까지입니다.';
     },
-    note:'순응하면 체포 후 법규대로 진행합니다. 불응하면 준비시간을 주고 경찰청으로 복귀합니다.'
+    note:'상대방이 순응하면 체포한 뒤 법규에 따라 처리합니다. 불응하면 준비 시간을 주고 경찰청으로 복귀합니다.'
   },
   {
     id:'raid', no:7, title:'전력진압 공표', tags:['40분 진행','2회 입력'],
-    timer:{ key:'raid', mins:40, label:'진압 종료' },
+    timer:{ key:'raid', mins:40, label:'진압 종료', startLabel:'영장 RP 시작' },
     privateOnly:true,
     count:1,
     line:function(){
@@ -414,7 +569,7 @@ var STAGES = [
       return '현시간부로 ' + s.target + '에 대한 전력진압 (' + t + ')까지 실시하겠습니다. '
            + s.control + ' 주변 반경 1km 내 접근을 통제하며, 접근 시 공범으로 간주하여 발포합니다.';
     },
-    note:'준비시간 경과 후 사유지 진입경로를 파악하고 두 번 입력한 뒤 전멸전을 시작합니다.'
+    note:'준비 시간이 지나면 사유지 진입 경로를 파악합니다. 이 문구를 두 번 입력한 뒤 전멸전을 시작합니다.'
   }
 ];
 
@@ -483,6 +638,7 @@ function buildChips(){
   var corp = document.getElementById('corpChips');
   FACTIONS.forEach(function(f){
     var b = el('button', 'chip', f.name);
+    b.type = 'button';
     b.dataset.faction = f.key;
     b.setAttribute('aria-pressed','false');
     b.addEventListener('click', function(){
@@ -502,6 +658,7 @@ function buildSiteChips(){
   box.innerHTML = '';
   state.faction.sites.forEach(function(s){
     var b = el('button', 'chip', s.label);
+    b.type = 'button';
     b.dataset.site = s.key;
     b.setAttribute('aria-pressed','false');
     b.addEventListener('click', function(){
@@ -520,11 +677,24 @@ function syncChips(){
   document.querySelectorAll('[data-site]').forEach(function(b){
     b.setAttribute('aria-pressed', b.dataset.site === state.site.key ? 'true' : 'false');
   });
+  var selected = state.faction.name + ' · ' + state.site.label;
+  document.getElementById('selectionText').textContent = selected;
+  document.getElementById('targetSummary').textContent = selected;
 }
 
 function buildStages(){
   var root = document.getElementById('stages');
   STAGES.forEach(function(st){
+    if (st.no === 1 || st.no === 4){
+      var phase = el('section', 'phase');
+      var phaseTitle = st.no === 1 ? '출석 · 수배 절차' : '영장 · 진압 절차';
+      var phaseDesc = st.no === 1
+        ? '현장에서 체포하지 못한 범죄를 출석 요구부터 수배까지 처리합니다.'
+        : '수배자가 사유지 또는 남부공항에 있을 때 사용하는 문구입니다.';
+      phase.appendChild(el('h2', null, phaseTitle));
+      phase.appendChild(el('p', null, phaseDesc));
+      root.appendChild(phase);
+    }
     var card = el('section', 'stage' + (st.warn ? ' warn' : ''));
     card.dataset.id = st.id;
 
@@ -551,6 +721,7 @@ function buildStages(){
       stt.id = 'state-' + st.id;
       tm.appendChild(stt);
       var go = el('button', 'mini', '시작');
+      go.type = 'button';
       go.addEventListener('click', function(){
         if (state.stamps[st.timer.key]){
           state.stamps[st.timer.key] = null;
@@ -569,9 +740,15 @@ function buildStages(){
     for (var i = 0; i < st.count; i++){
       (function(idx){
         var row = el('div', 'line');
+        if (st.count > 1){
+          var lineLabel = st.id === 'warrant' ? (idx + 1) + '차' : (idx + 1) + '회';
+          row.appendChild(el('span', 'line-index', lineLabel));
+        } else row.classList.add('single');
         var txt = el('div', 'txt mono');
         txt.id = 'txt-' + st.id + '-' + idx;
         var btn = el('button', 'copy', '복사');
+        btn.type = 'button';
+        if (st.requiresTarget) btn.dataset.requiresTarget = 'true';
         btn._base = '복사';
         btn.addEventListener('click', function(){
           if (st.timer && !state.stamps[st.timer.key]){
@@ -612,6 +789,25 @@ function remainText(ms){
 
 function tick(){
   var now = new Date();
+  var idInput = document.getElementById('sid');
+  var nickInput = document.getElementById('snick');
+  var hasId = !!idInput.value.trim();
+  var hasNick = !!nickInput.value.trim();
+  var hasStartedInput = hasId || hasNick;
+  var targetReady = hasId && hasNick;
+  idInput.classList.toggle('missing', hasStartedInput && !hasId);
+  nickInput.classList.toggle('missing', hasStartedInput && !hasNick);
+  idInput.setAttribute('aria-invalid', hasStartedInput && !hasId ? 'true' : 'false');
+  nickInput.setAttribute('aria-invalid', hasStartedInput && !hasNick ? 'true' : 'false');
+  var targetHint = document.getElementById('targetHint');
+  targetHint.className = 'field-status ' + (targetReady ? 'ready' : hasStartedInput ? 'warn' : '');
+  targetHint.textContent = targetReady
+    ? '[' + idInput.value.trim() + '] ' + nickInput.value.trim() + ' 정보가 문구에 적용되었습니다.'
+    : '출석·수배 문구를 복사하려면 두 항목을 모두 입력하세요.';
+  document.querySelectorAll('.copy[data-requires-target="true"]').forEach(function(btn){
+    btn.disabled = !targetReady;
+    btn.title = targetReady ? '문구 복사' : '고유번호와 닉네임을 먼저 입력하세요';
+  });
   document.getElementById('clock').textContent = pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
   var q5v = document.getElementById('q5v'); if (q5v) q5v.textContent = hhmm(plus(5));
   var q40v = document.getElementById('q40v'); if (q40v) q40v.textContent = hhmm(plus(40));
@@ -645,7 +841,7 @@ function tick(){
         dl.querySelector('.rm').textContent = remainText(left);
       } else {
         var mins = st.timer.adjustable ? prepMins() : st.timer.mins;
-        stt.textContent = '미시작 · 지금 누르면 ' + korTime(plus(mins));
+        stt.textContent = st.timer.startLabel + ' · 지금 시작하면 ' + korTime(plus(mins));
         go.textContent = '시작';
         dl.classList.remove('on','over');
       }
